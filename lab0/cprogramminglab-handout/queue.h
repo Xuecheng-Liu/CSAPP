@@ -5,14 +5,14 @@
 typedef struct list_ele {
     char *value;
     struct list_ele *next;
-} list_ele_t; // this is the alias for struct list_ele, size of list_ele_t is 16 bytes
+} list_ele_t; // this is the alias for struct list_ele, size of list_ele_t is 16
+              // bytes
 
 // struct list_ele {
 //     char *value;
 //     struct list_ele *next;
 // };
 // typedef struct list_ele list_ele_t;
-
 
 typedef struct {
     list_ele_t *head;

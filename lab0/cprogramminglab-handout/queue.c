@@ -228,3 +228,30 @@ void queue_reverse(queue_t *q) {
     }
     q->head = prev;
 }
+
+bool queue_remove_tail(queue_t *q){
+    if (!q || q->size == 0) return false;
+    
+    list_ele_t *curr = q->head;
+    list_ele_t *prev = NULL;
+
+    while (curr->next){
+        prev = curr;
+        curr = curr->next;
+    }
+    // curr is the last, prev is the second last
+    if(prev == NULL){
+        q->head = NULL;
+        q->tail = NULL;
+    }else{
+        prev->next = NULL;
+        q->tail = prev;
+    }
+
+    q->size--;
+    //free(curr->next);
+    free(curr->value);
+    free(curr);
+
+    return true;
+}
