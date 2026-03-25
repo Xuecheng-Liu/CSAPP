@@ -143,8 +143,8 @@ NOTES:
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  return 2;
-}
+  return ~(~(x&~y) & ~(~x&y));
+} 
 /* 
  * tmin - return minimum two's complement integer 
  *   Legal ops: ! ~ & ^ | + << >>
@@ -153,7 +153,7 @@ int bitXor(int x, int y) {
  */
 int tmin(void) {
 
-  return 2;
+  return 1 << 31;
 
 }
 //2
@@ -165,7 +165,12 @@ int tmin(void) {
  *   Rating: 1
  */
 int isTmax(int x) {
-  return 2;
+  // max should be 0111..11
+  // x + 1 =       1000..00 = tmin
+  // x + (x + 1) = 111...11 = -1, which is x + x + 1 == -1 => x is tmax
+  // use xor ^   (x + (x + 1)) ^ -1 is non-zero => x + x = 1 is not -1 => x is not tmax => x is tmax => (x + (x + 1)) ^ -1 is zero
+  // exclude edge case x = -1
+  return !(x + (x + 1) ^ -1) & !!(x+1);
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -176,7 +181,12 @@ int isTmax(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+  // need a 32-bit mask, 1010 1010 1010 1010.... 1010, which is 0xAAAAAAAA
+  // wish x & mask = mask, => (x & mask) ^ mask = 0
+  int mask = 0xAA;
+  mask = (mask << 8) | mask;
+  mask = (mask << 16) | mask;
+  return !((x & mask) ^ mask);
 }
 /* 
  * negate - return -x 
