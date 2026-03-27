@@ -196,7 +196,8 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  // two's complement: -1 = x + (~x), implies -x = ~x + 1
+  return ~x + 1;
 }
 //3
 /* 
@@ -209,7 +210,11 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+  // x >= 0x30 means x - 0x30 >=0, implies x + (~0x30 + 1) >=0,
+  // we wish x + (~0x30 + 1) is non-negative, which means sign bit is not 1,
+  // which can be checked by right shift 31 bits
+  // vice versa
+  return !((x + ~0x30 + 1) >> 31) & !((0x39 + ~x + 1) >> 31);
 }
 /* 
  * conditional - same as x ? y : z 
@@ -219,7 +224,13 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+  // we need two masks,either 0x00000000, or 0xffffffff, which is all 0 bits or all 1 bits
+  // !!x changes x to either 0 or 1, 
+  // with 0 or 1, we want a all 0 bits(which is 0) or all 1 bits (which is -1)
+  // x + (~x) = -1, implies -x = ~x+1, which is all 0 bits (0) or all 1 bits (-1)
+  // which means 0 (x ==0) turns to 0x00000000, 1(x!=0) turns to 0xffffffff
+  int mask = ~!!x + 1;
+  return mask&y | ~mask&z;
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
