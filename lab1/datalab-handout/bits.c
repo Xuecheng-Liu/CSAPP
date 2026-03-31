@@ -240,7 +240,15 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+  // x<= y, x-y<=0, imples y + (-x) >= 0, implies y + ~x + 1 >=0,
+  // may overflow => -1
+  int sx = (x >> 31) & 1; // (this is 111...11 or 000...000) & 1, resulting in 1 or 0
+  int sy = (y >> 31) & 1; // (this is 111...11 or 000...000) & 1, resulting in 1 or 0
+  int sign_diff = sx ^ sy; // -1 if x and y different sign, 0 if x and y same sign
+  // the logic is if x and y are different signs, then x<=y is equivalent as x >=0, if same sign then use comment 1 and check result msb
+  int diff = y + (~x + 1);
+  int msb = (diff >> 31) & 1; // this will be 0 if x <=y, otherwise 1
+  return (sign_diff & sx) | (!sign_diff & ! msb);
 }
 //4
 /* 
@@ -252,11 +260,14 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return 2;
+  // again x + ~x = -1, implies -x = ~x + 1
+  int neg_x = ~x + 1;
+  int sign_bit = (x | neg_x) >> 31; // if x is 0, then 0, otherwise, -1
+  return sign_bit + 1;
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
- *  Examples: howManyBits(12) = 5
+ *  Examples: howManyBits(12) = 5 --- 100
  *            howManyBits(298) = 10
  *            howManyBits(-5) = 4
  *            howManyBits(0)  = 1
