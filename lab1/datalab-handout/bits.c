@@ -267,7 +267,7 @@ int logicalNeg(int x) {
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
- *  Examples: howManyBits(12) = 5 --- 100
+ *  Examples: howManyBits(12) = 5 --- 1100
  *            howManyBits(298) = 10
  *            howManyBits(-5) = 4
  *            howManyBits(0)  = 1
@@ -278,7 +278,28 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  return 0;
+  // since using 2's complement, the msb is reserved for sign bit
+  // 12 : 01100 needs 5 bits because we have to put 0 in msb
+  // -5 : 5 is 0101, -5 is 1011, need 4 bits
+  // for postive number, needs to find the left most 1 in which position d
+  // for negative number, needs to find the left most 0 in which position d
+  // then add 1 to get how many bits in total, which is d+1
+  int sign = x >> 31; // if x positive then 0x00000000, if x negative then 0xffffffff
+  // we wish to find left most 1  for both positive and negative
+  // so that we just need to find left most 1 for both
+  x = (~x & sign) | (~sign & x); // if x is positve, then 0 | x is x; if x is negative, then ~x | 0 is ~x
+  int b16 = (!!(x >> 16)) << 4; // check the 16 bits on the left, if there is any 1, then b16 is 16, other wise 0
+  x = x >> b16;
+  int b8 = (!!(x >> 8)) << 3;
+  x = x >> b8;
+  int b4 = (!!(x >> 4)) << 2;
+  x = x >> b4;
+  int b2 = (!!(x >> 2)) << 1;
+  x = x >> b2;
+  int b1 = (!!(x >> 1));
+  x = x >> b1;
+  int b0 = x;
+  return b16 + b8 + b4 + b2 + b1 + b0 + 1;
 }
 //float
 /* 
