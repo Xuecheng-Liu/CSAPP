@@ -289,7 +289,7 @@ int howManyBits(int x) {
   // so that we just need to find left most 1 for both
   x = (~x & sign) | (~sign & x); // if x is positve, then 0 | x is x; if x is negative, then ~x | 0 is ~x
   int b16 = (!!(x >> 16)) << 4; // check the 16 bits on the left, if there is any 1, then b16 is 16, other wise 0
-  x = x >> b16;
+  x = x >> b16; // either right shit 16 or stays the same
   int b8 = (!!(x >> 8)) << 3;
   x = x >> b8;
   int b4 = (!!(x >> 4)) << 2;
@@ -314,7 +314,18 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-  return 2;
+    unsigned sign = uf & 0x80000000;
+    unsigned exp  = (uf >> 23) & 0xFF;
+    unsigned frac = uf & 0x7FFFFF;
+
+    if (exp == 0xFF)
+        return uf;
+
+    if (exp == 0)
+        return sign | (frac << 1);
+
+    exp += 1;
+    return sign | (exp << 23) | frac;
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
@@ -329,7 +340,34 @@ unsigned floatScale2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  return 2;
+    int s = uf >> 31;
+    int exp = (uf >> 23) & 0xFF;
+    int frac = uf & 0x7FFFFF;
+
+    int E, M;
+
+    // NaN or infinity
+    if (exp == 0xFF) {
+        return 0x80000000u;
+    }
+
+    E = exp - 127;
+
+    // too small
+    if (E < 0) return 0;
+
+    // too large
+    if (E > 31) return 0x80000000u;
+
+    M = frac | 0x800000;
+
+    if (E > 23) {
+        M = M << (E - 23);
+    } else {
+        M = M >> (23 - E);
+    }
+
+    return s ? -M : M;
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
@@ -345,5 +383,14 @@ int floatFloat2Int(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+    if (x > 127)
+        return 0x7f800000;
+
+    if (x < -149)
+        return 0;
+
+    if (x < -126)
+        return 1 << (x + 149);
+
+    return (x + 127) << 23;
 }
